@@ -177,18 +177,26 @@ document.addEventListener('DOMContentLoaded', () => {
       const staggerWord = isDesktop ? 0.08 : 0.06;
 
       // —— Nav entrance ——
-      const navItems = gsap.utils.toArray('.glass-nav .logo, .glass-nav .header-cta');
-      if (isDesktop) {
-        navItems.push(...gsap.utils.toArray('.glass-nav .nav a'));
-      }
-      gsap.from(navItems, {
-        y: -14,
+      gsap.from('.glass-nav .logo', {
         opacity: 0,
-        duration: 0.7,
-        stagger: 0.04,
-        ease: 'power3.out',
+        duration: 0.6,
+        ease: 'power2.out',
         delay: 0.1,
-        clearProps: 'transform',
+      });
+      if (isDesktop) {
+        gsap.from('.glass-nav .nav a', {
+          opacity: 0,
+          duration: 0.5,
+          stagger: 0.04,
+          ease: 'power2.out',
+          delay: 0.15,
+        });
+      }
+      gsap.from('.glass-nav .header-cta', {
+        opacity: 0,
+        duration: 0.5,
+        ease: 'power2.out',
+        delay: 0.2,
       });
 
       // —— Hero beauty ——
@@ -289,13 +297,22 @@ document.addEventListener('DOMContentLoaded', () => {
             once: true,
           },
         });
-        tl.from('.experience-intro > *', {
+        tl.from('.experience-intro > *:not(.experience-actions)', {
           y: 36,
           opacity: 0,
           duration: 0.75,
           stagger: 0.1,
           ease: 'power3.out',
         });
+        tl.from(
+          '.experience-actions',
+          {
+            opacity: 0,
+            duration: 0.45,
+            ease: 'power2.out',
+          },
+          '-=0.35'
+        );
         tl.from(
           '.experience-media',
           {
@@ -442,39 +459,30 @@ document.addEventListener('DOMContentLoaded', () => {
         },
       });
 
-      // —— Reserva CTA ——
-      const reserveCta = document.querySelector('#reserva .btn-pill');
-      if (reserveCta) {
-        gsap.from('#reserva .reserve-box > *', {
-          y: 28,
-          opacity: 0,
-          duration: 0.7,
-          stagger: 0.1,
-          ease: 'power3.out',
-          clearProps: 'transform',
-          scrollTrigger: {
-            trigger: '#reserva',
-            start: 'top 75%',
-            once: true,
-          },
-        });
-        gsap.fromTo(
-          reserveCta,
-          { boxShadow: '0 0 0 0 rgba(196, 116, 108, 0.45)' },
-          {
-            boxShadow: '0 0 0 14px rgba(196, 116, 108, 0)',
-            duration: 1.1,
-            ease: 'power1.out',
-            repeat: 2,
-            delay: 0.5,
-            scrollTrigger: {
-              trigger: '#reserva',
-              start: 'top 70%',
-              once: true,
-            },
-          }
-        );
-      }
+      // —— Reserva ——
+      gsap.from('#reserva .reserve-box > *:not(.btn-pill)', {
+        y: 28,
+        opacity: 0,
+        duration: 0.7,
+        stagger: 0.1,
+        ease: 'power3.out',
+        clearProps: 'transform',
+        scrollTrigger: {
+          trigger: '#reserva',
+          start: 'top 75%',
+          once: true,
+        },
+      });
+      gsap.from('#reserva .btn-pill', {
+        opacity: 0,
+        duration: 0.45,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: '#reserva',
+          start: 'top 75%',
+          once: true,
+        },
+      });
 
       // —— Concepto body ——
       gsap.from('#concepto .concept-body > *', {

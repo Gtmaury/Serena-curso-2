@@ -114,10 +114,7 @@ a:hover { color: var(--ink); }
   font-weight: 600;
   letter-spacing: 0.02em;
   background: transparent;
-  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease), transform 0.25s var(--ease);
-}
-.btn-pill:hover {
-  transform: scale(1.03);
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease);
 }
 .header-cta {
   color: #fffaf7;
