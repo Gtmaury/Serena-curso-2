@@ -21,6 +21,113 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
+  // —— Pink frost particles (below eye hero only) ——
+  const canvas = document.getElementById('particles-canvas');
+  const heroEye = document.getElementById('hero');
+  if (canvas && !reduceMotion) {
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const particleCount = window.innerWidth < 768 ? 36 : 70;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      initParticles();
+    });
+    resizeCanvas();
+
+    function heroClipTop() {
+      if (!heroEye) return 0;
+      const bottom = heroEye.getBoundingClientRect().bottom;
+      return Math.max(0, Math.min(canvas.height, bottom));
+    }
+
+    class Particle {
+      constructor() {
+        this.reset(true);
+      }
+
+      reset(initial = false) {
+        this.x = Math.random() * canvas.width;
+        this.y = initial ? Math.random() * canvas.height : canvas.height + Math.random() * 60;
+        this.size = Math.random() * 2.8 + 0.9;
+        this.speedX = Math.random() * 0.35 - 0.175;
+        this.speedY = Math.random() * -0.55 - 0.12;
+        this.opacity = Math.random() * 0.4 + 0.2;
+        this.pulseSpeed = Math.random() * 0.015 + 0.005;
+        this.pulseDir = Math.random() > 0.5 ? 1 : -1;
+        this.sparkle = Math.random() > 0.78;
+        const tones = [
+          [255, 105, 150],
+          [196, 116, 108],
+          [212, 160, 154],
+          [240, 90, 140],
+          [255, 150, 185],
+        ];
+        this.rgb = tones[Math.floor(Math.random() * tones.length)];
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.y < -12) this.reset(false);
+        if (this.x < -12 || this.x > canvas.width + 12) {
+          this.x = Math.random() * canvas.width;
+        }
+        this.opacity += this.pulseSpeed * this.pulseDir;
+        if (this.opacity > 0.7 || this.opacity < 0.18) this.pulseDir *= -1;
+      }
+
+      draw() {
+        const [r, g, b] = this.rgb;
+        const a = this.opacity;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 1.6, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a * 0.22})`;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
+        ctx.fill();
+        if (this.sparkle) {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, Math.max(0.5, this.size * 0.25), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 220, 230, ${a})`;
+          ctx.fill();
+        }
+      }
+    }
+
+    function initParticles() {
+      particles = [];
+      for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+    }
+    initParticles();
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const clipY = heroClipTop();
+      if (clipY < canvas.height) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, clipY, canvas.width, canvas.height - clipY);
+        ctx.clip();
+        particles.forEach((p) => {
+          p.update();
+          p.draw();
+        });
+        ctx.restore();
+      } else {
+        particles.forEach((p) => p.update());
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }
+
   if (!hasGsap || reduceMotion) return;
 
   gsap.registerPlugin(ScrollTrigger);
@@ -70,14 +177,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const staggerWord = isDesktop ? 0.08 : 0.06;
 
       // —— Nav entrance ——
-      const navItems = gsap.utils.toArray('.glass-nav .logo, .glass-nav .nav a, .glass-nav .header-cta');
+      const navItems = gsap.utils.toArray('.glass-nav .logo, .glass-nav .header-cta');
+      if (isDesktop) {
+        navItems.push(...gsap.utils.toArray('.glass-nav .nav a'));
+      }
       gsap.from(navItems, {
-        y: -18,
+        y: -14,
         opacity: 0,
-        duration: 0.75,
-        stagger: 0.05,
+        duration: 0.7,
+        stagger: 0.04,
         ease: 'power3.out',
         delay: 0.1,
+        clearProps: 'transform',
       });
 
       // —— Hero beauty ——
@@ -194,17 +305,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ease: 'power3.out',
           },
           '-=0.55'
-        );
-        tl.from(
-          '.cupos .pan',
-          {
-            scale: 0,
-            opacity: 0,
-            duration: 0.35,
-            stagger: 0.08,
-            ease: 'back.out(1.6)',
-          },
-          '-=0.45'
         );
       }
 
@@ -351,25 +451,29 @@ document.addEventListener('DOMContentLoaded', () => {
           duration: 0.7,
           stagger: 0.1,
           ease: 'power3.out',
+          clearProps: 'transform',
           scrollTrigger: {
             trigger: '#reserva',
             start: 'top 75%',
             once: true,
           },
         });
-        gsap.to(reserveCta, {
-          scale: 1.04,
-          duration: 0.9,
-          ease: 'sine.inOut',
-          yoyo: true,
-          repeat: 3,
-          delay: 0.4,
-          scrollTrigger: {
-            trigger: '#reserva',
-            start: 'top 70%',
-            once: true,
-          },
-        });
+        gsap.fromTo(
+          reserveCta,
+          { boxShadow: '0 0 0 0 rgba(196, 116, 108, 0.45)' },
+          {
+            boxShadow: '0 0 0 14px rgba(196, 116, 108, 0)',
+            duration: 1.1,
+            ease: 'power1.out',
+            repeat: 2,
+            delay: 0.5,
+            scrollTrigger: {
+              trigger: '#reserva',
+              start: 'top 70%',
+              once: true,
+            },
+          }
+        );
       }
 
       // —— Concepto body ——
